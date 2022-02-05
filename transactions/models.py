@@ -8,9 +8,13 @@ class TransactionData(models.Model):
     key = models.CharField(max_length=30,
                            primary_key=True,
                            help_text="code YYYY-MM-DD")
+    account = models.CharField(max_length=30, help_text="帳戶")
     price = models.FloatField(help_text="成交價")
     amount = models.IntegerField(help_text="成交量")
     fee = models.FloatField(help_text="手續費")
 
     def __str__(self):
-        return f"{self.code} {self.date}"
+        return f"{self.key}"
+
+
+

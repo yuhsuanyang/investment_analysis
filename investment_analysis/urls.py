@@ -15,9 +15,12 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from transactions.views import main
+from transactions.views import main, transaction_form
+from accounts.views import account_form
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('index/', main, name='index')
+    path('index/', main, name='index'),
+    path('new_transaction/', transaction_form, name='new_transaction'),
+    path('new_account/', account_form, name='new_account')
 ]
