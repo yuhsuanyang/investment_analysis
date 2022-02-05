@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+  <body>
+    <form action="" method="POST">
+      {% csrf_token %}
+      <div style="display: flex; flex-direction: row">
+        <div class="labels">
+          <div>{{form.code.label}}</div>
+          <div>{{form.date.label}}</div>
+          <div>帳戶</div>
+          <div>{{form.price.label}}</div>
+          <div>{{form.amount.label}}</div>
+          <div>{{form.fee.label}}</div>
+        </div>
+        <div class="inputs">
+          <div>{{form.code}}</div>
+          <div>{{form.date}}</div>
+          <div>
+            <input
+              type="text"
+              name="account"
+              list="account_list"
+              placeholder="請選擇帳戶"
+            />
+            <datalist id="account_list">
+              {% for account in accounts %}
+              <option value="{{account}}"></option>
+              {% endfor %}
+            </datalist>
+          </div>
+          <div>{{form.price}}</div>
+          <div>{{form.amount}}</div>
+          <div>{{form.fee}}</div>
+        </div>
+      </div>
+      <input type="submit" value="新增" />
+    </form>
+  </body>
+</html>
+<style>
+  form {
+    position: absolute;
+    width: 40vw;
+    height: 40vh;
+    left: 30vw;
+    top: 30vh;
+    text-align: center;
+  }
+  .labels {
+    width: 38%;
+    margin: 2%;
+    text-align: right;
+  }
+  .inputs {
+    width: 58%;
+    margin: 2%;
+    text-align: left;
+  }
+</style>

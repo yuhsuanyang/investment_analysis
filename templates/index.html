@@ -1,7 +1,52 @@
 <!DOCTYPE html>
 <html>
   <body>
-    <h1>損益試算</h1>
-    <p>{{message}}</p>
+    <div class="nav">
+      <div style="font-size: 2vw">投資組合損益</div>
+      <div style="font-size: 1.2vw">
+        <div class="link"><a>首頁</a></div>
+        <div class="link">
+          <a
+            onclick="window.open('/new_transaction', 'buy', 'width=500, height=300')"
+            >買進</a
+          >
+        </div>
+        <div class="link"><a>賣出</a></div>
+        <div class="link"><a>領取股利</a></div>
+        <div class="link">
+          <a
+            onclick="window.open('/new_account', 'acc', 'width=500, height=300')"
+            >新增帳戶</a
+          >
+        </div>
+      </div>
+    </div>
   </body>
 </html>
+
+<style>
+  @font-face {
+    font-family: chn;
+    src: url("https://fonts.googleapis.com/earlyaccess/cwtexfangsong.css");
+  }
+  body {
+    margin: 0;
+  }
+  .nav {
+    background-color: black;
+    color: white;
+    width: 15%;
+    height: 100vh;
+    /*    font-family: chn;*/
+  }
+  .nav > div {
+    padding: 5%;
+  }
+  .link {
+    color: white;
+    padding: 5%;
+  }
+  a {
+    text-decoration: none;
+  }
+</style>
