@@ -3,57 +3,71 @@
   <body>
     <form action="" method="POST">
       {% csrf_token %}
-      <div style="display: flex; flex-direction: row">
-        <div class="labels">
-          <div>{{form.code.label}}</div>
-          <div>{{form.date.label}}</div>
-          <div>帳戶</div>
-          <div>{{form.price.label}}</div>
-          <div>{{form.amount.label}}</div>
-          <div>{{form.fee.label}}</div>
-        </div>
-        <div class="inputs">
-          <div>{{form.code}}</div>
-          <div>{{form.date}}</div>
-          <div>
-            <input
-              type="text"
-              name="account"
-              list="account_list"
-              placeholder="請選擇帳戶"
-            />
-            <datalist id="account_list">
-              {% for account in accounts %}
-              <option value="{{account}}"></option>
-              {% endfor %}
-            </datalist>
-          </div>
-          <div>{{form.price}}</div>
-          <div>{{form.amount}}</div>
-          <div>{{form.fee}}</div>
+      <div class="question">
+        <div>股票代碼</div>
+        <div>
+          <input type="text" name="stock_code" list="code_list" />
+          <datalist id="code_list">
+            {% for code in stock_codes %}
+            <option value="{{code}}"></option>
+            {% endfor %}
+          </datalist>
         </div>
       </div>
-      <input type="submit" value="新增" />
+      <div class="question">
+        <div>交易日期</div>
+        <div><input type="date" name="date" /></div>
+      </div>
+      <div class="question">
+        <div>帳戶</div>
+        <div>
+          <input
+            type="text"
+            name="account"
+            list="account_list"
+            placeholder="請選擇帳戶"
+          />
+          <datalist id="account_list">
+            {% for account in accounts %}
+            <option value="{{account}}"></option>
+            {% endfor %}
+          </datalist>
+        </div>
+      </div>
+      <div class="question">
+        <div>交易價格</div>
+        <div><input type="number" name="stock_price" /></div>
+      </div>
+      <div class="question">
+        <div>交易量(股)</div>
+        <div><input type="number" name="stock_amount" /></div>
+      </div>
+      <div class="question">
+        <div>手續費</div>
+        <div><input type="number" name="fee" /></div>
+      </div>
+      <div style="text-align: right">
+        <input type="submit" style="width: 50px" value="新增" />
+      </div>
     </form>
   </body>
 </html>
 <style>
   form {
     position: absolute;
-    width: 40vw;
-    height: 40vh;
-    left: 30vw;
-    top: 30vh;
+    width: 50vw;
+    left: 25vw;
+    top: 20vh;
     text-align: center;
   }
-  .labels {
-    width: 38%;
-    margin: 2%;
-    text-align: right;
+  input {
+    width: 150px;
   }
-  .inputs {
-    width: 58%;
-    margin: 2%;
-    text-align: left;
+  .question {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    margin-top: 2.5%;
+    margin-bottom: 2.5%;
   }
 </style>
