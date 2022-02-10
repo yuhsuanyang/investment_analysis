@@ -4,7 +4,7 @@
     <form action="" method="POST">
       {% csrf_token %}
       <div class="question">
-        <div>股票代碼</div>
+        <div class="label">股票代碼</div>
         <div>
           <input type="text" name="stock_code" list="code_list" />
           <datalist id="code_list">
@@ -15,11 +15,11 @@
         </div>
       </div>
       <div class="question">
-        <div>交易日期</div>
+        <div class="label">交易日期</div>
         <div><input type="date" name="date" /></div>
       </div>
       <div class="question">
-        <div>帳戶</div>
+        <div class="label">帳戶</div>
         <div>
           <input
             type="text"
@@ -35,15 +35,15 @@
         </div>
       </div>
       <div class="question">
-        <div>交易價格</div>
-        <div><input type="number" name="stock_price" /></div>
+        <div class="label">交易價格</div>
+        <div><input type="number" step="0.01" name="stock_price" /></div>
       </div>
       <div class="question">
-        <div>交易量(股)</div>
+        <div class="label">交易量(股)</div>
         <div><input type="number" name="stock_amount" /></div>
       </div>
       <div class="question">
-        <div>手續費</div>
+        <div class="label">手續費</div>
         <div><input type="number" name="fee" /></div>
       </div>
       <div style="text-align: right">
@@ -55,8 +55,7 @@
 <style>
   form {
     position: absolute;
-    width: 50vw;
-    left: 25vw;
+    left: 15%;
     top: 20vh;
     text-align: center;
   }
@@ -70,4 +69,12 @@
     margin-top: 2.5%;
     margin-bottom: 2.5%;
   }
+  .label {
+    width: 150px;
+    text-align: right;
+    margin-right: 5%;
+  }
+  /*  .question > div {
+    margin-left: 2%;
+  }*/
 </style>
