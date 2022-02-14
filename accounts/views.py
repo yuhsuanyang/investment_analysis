@@ -14,3 +14,9 @@ def account_form(request):
         print(f"account {name} created!")
         return redirect('/new_account')
     return render(request, 'new_account.html', context=data)
+
+
+def delete_account(request):
+    if request.method == 'POST':
+        name = request.POST['account']
+    return render(request, 'delete_account.html', context={'account': name})

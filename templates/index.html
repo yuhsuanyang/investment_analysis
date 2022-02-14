@@ -1,24 +1,70 @@
 <!DOCTYPE html>
 <html>
+  <head>
+    <link rel="stylesheet" href="/css/styles.css" type="text/css"/>
+  </head>
   <body>
-    <div class="nav">
-      <div style="font-size: 2vw">投資組合損益</div>
-      <div style="font-size: 1.2vw">
-        <div class="link"><a>首頁</a></div>
-        <div class="link">
-          <a
-            onclick="window.open('/new_transaction', 'buy', 'width=500, height=300')"
-            >買進/增資</a
-          >
+    <div style="display: flex; flex-direction: row">
+      <div class="nav">
+        <div style="font-size: 2vw">投資組合損益</div>
+        <div style="font-size: 1.2vw">
+          <div class="link"><a>首頁</a></div>
+          <div class="link">
+            <a
+              onclick="window.open('/new_transaction', 'buy', 'width=500, height=300')"
+              >買進/增資</a
+            >
+          </div>
+          <div class="link"><a>賣出</a></div>
+          <div class="link"><a>領取股利</a></div>
+          <div class="link">
+            <a
+              onclick="window.open('/new_account', 'acc', 'width=500, height=300')"
+              >新增帳戶</a
+            >
+          </div>
         </div>
-        <div class="link"><a>賣出</a></div>
-        <div class="link"><a>領取股利</a></div>
-        <div class="link">
-          <a
-            onclick="window.open('/new_account', 'acc', 'width=500, height=300')"
-            >新增帳戶</a
-          >
-        </div>
+      </div>
+      <div class="account_sections">
+        {% for account_name, total_value in account%}
+          <div class="account">
+              <div class="lightgrayblue grayblue tag">
+                  <p><b>{{account_name}}</b></p>
+              </div>
+              <div class="lightgrayblue" style="border-radius: 0 5px 5px 5px">
+                <div class="row">
+                  <p class="grayblue inline">投資總額</p>
+                  <p class="winered inline"><b>{{total_value}}</b></p>
+                </div>
+                <div class="row">
+                    <p class="grayblue">投資總損益</p>
+                </div>
+                <div class="row">
+                    <p class="grayblue">庫存總損益</p>
+                </div>
+                <div class="row">
+                    <p class="grayblue">已實現損益</p>
+                </div>
+                <div class="row">
+                    <p class="grayblue">報酬率</p>
+                </div>
+                <div class="row">
+                    <p class="grayblue">庫存報酬率</p>
+                </div>
+                <div class="row">
+                    <p class="grayblue">已實現報酬率</p>
+                </div>
+                <form action="{% url 'delete_account' %}" class="delete" method="post">
+                    {% csrf_token %}
+                    <button type'submit' name='account' value={{account_name}}>刪除帳戶</button>
+                </form>
+              </div> <!-- for line 30 -->
+            </div> <!-- for line 26 -->
+            {% endfor %}
+        <div
+            style="width: 200px; height: 200px; background-color: #ebe2e5"
+            ></div>
+      </div> <!-- for line 25 -->
       </div>
     </div>
   </body>
@@ -31,10 +77,25 @@
   }
   body {
     margin: 0;
+/*    background-color: white;*/
+  }
+  .account{
+    margin-right: 2%;
+    width: 20%;
+    height: 50%;
+    text-align: center;
+  }
+
+  .account_sections {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-start;
+    width: 83%;
+    margin: 2%;
   }
   .nav {
-    background-color: black;
-    color: white;
+    background-color: #ebebe9;
+    color: #53565c;
     width: 15%;
     height: 100vh;
     /*    font-family: chn;*/
@@ -43,10 +104,48 @@
     padding: 5%;
   }
   .link {
-    color: white;
-    padding: 5%;
+    /*color: white;*/
+    padding: 2% 5% 2% 5%;
+    border-bottom: 2px dashed #ab8c83;
   }
-  a {
-    text-decoration: none;
+  .row{
+    padding: 5% 0 5% 0;
+    font-size: 1vw; 
+  }
+  .tag{
+    width: 40%; 
+    font-size: 1.2vw; 
+    padding: 2%;
+    border-radius: 5px 5px 0 0;
+  }
+  .delete{
+    text-align: right;
+    font-size: 0.1vw;
+    padding: 2%;
+    color: #93939b;
+  }
+  .pad{
+    box-shadow: 5px 5px #7c86a1;
+  }
+  .winered{
+    color: #8d6a6e;
+    font-size: 1.5vw;
+    font-family: "Courier New"
+  }
+
+  .inline{
+    display: inline-block
+  }
+  p{
+    margin: 0;
+  }
+  button{
+/*    color: #93939b;*/
+    color: #c9d3d5;
+    background-color: transparent;
+    border: none;
+  }
+  button:hover{
+    color: #7197a4;
   }
 </style>

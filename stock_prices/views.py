@@ -43,10 +43,19 @@ def get_account_stocks(acc_name):
     return transaction_df[transaction_df['account'] == acc_name]
 
 
+def get_account_overview(df):
+    data = {}
+    data['total_investment'] = (df['amount'] * df['price'] + df['fee']).sum()
+    return data
+
+
 def display_stock_condition(requests):
     accounts = Account.objects.values('name').distinct()
     accounts = {acc['name']: {} for acc in accounts}
+    data = {'account': []}
     for acc in accounts:
         accounts[acc] = get_account_stocks(acc)
-
-    return render(requests, 'index.html', context=accounts)
+        total_value = get_account_overview(accounts[acc])
+        data['account'].append([acc, total_value['total_investment']])
+    print(accounts)
+    return render(requests, 'index.html', context=data)
