@@ -15,4 +15,4 @@ class StockPriceData(models.Model):
         return ['code', 'date', 'price']
 
     def get_values(self):
-        return [self.code, self.account, self.price]
+        return [self.code, self.date, self.price]

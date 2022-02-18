@@ -26,7 +26,7 @@
         </div>
       </div>
       <div class="account_sections">
-        {% for account_name, total_value in account%}
+        {% for account_name, total_value, stock_profit_loss in account%}
           <div class="account">
               <div class="lightgrayblue grayblue tag">
                   <p><b>{{account_name}}</b></p>
@@ -40,7 +40,8 @@
                     <p class="grayblue">投資總損益</p>
                 </div>
                 <div class="row">
-                    <p class="grayblue">庫存總損益</p>
+                    <p class="grayblue inline">庫存總損益</p>
+                    <p class="winered inline"><b>{{stock_profit_loss}}</b></p>
                 </div>
                 <div class="row">
                     <p class="grayblue">已實現損益</p>
