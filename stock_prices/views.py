@@ -80,7 +80,9 @@ def get_account_overview(df):
 
 
 def display_stock_condition(requests):
-    update_data()
+    if datetime.now().hour >= 14:  # update close prices after 14
+        update_data()
+
     stocks_all = TransactionData.objects.all()
     transaction_df = queryset2df(stocks_all).sort_values('date').reset_index(
         drop=True)
@@ -98,7 +100,7 @@ def display_stock_condition(requests):
             0.003 + 0.001425)  # 0.003: 證交稅 0.001425: 賣出手續費
     transaction_df['sell_cost'] = round(transaction_df['sell_cost'])
     print(transaction_df[[
-        'code', 'account', 'fee', 'sell_cost', 'price', 'latest_price', 'today'
+        'code', 'account', 'date', 'price', 'latest_price', 'today'
     ]])
 
     accounts = Account.objects.values('name').distinct()
