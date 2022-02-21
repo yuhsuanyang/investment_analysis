@@ -14,7 +14,14 @@ def account_form(request):
         new_account = Account(name=name, record_date=date, profit=0, cost=0)
         new_account.save()
         print(f"account {name} created!")
-        return redirect('/new_account')
+        return render(request,
+                      'account_success_message.html',
+                      context={
+                          'name': name,
+                      })
+
+
+#        return redirect('/new_account')
     return render(request, 'new_account.html', context=data)
 
 

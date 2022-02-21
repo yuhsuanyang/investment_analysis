@@ -42,7 +42,7 @@ def transaction_form(request):
         #        data = TransactionData.objects.all()
         #        print(data)
         return render(request,
-                      'success_message.html',
+                      'transaction_success_message.html',
                       context={
                           'code': stock_code,
                           'amount': stock_amount,
