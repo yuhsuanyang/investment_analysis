@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js">
+    </script>
+    <link rel="stylesheet" href="/css/styles.css" type="text/css"/>
+  </head>
+  <body>
+    <div style="display: flex; flex-direction: row">
+      <div class="nav">
+        <div style="font-size: 2vw">投資組合損益</div>
+        <div style="font-size: 1.2vw">
+          <div class="link"><a style="color: #53565c" href="/index">首頁</a></div>
+          <div class="link">
+            <a
+              onclick="window.open('/new_transaction', 'buy', 'width=500, height=300')"
+              >買進/增資</a
+            >
+          </div>
+          <div class="link"><a>賣出</a></div>
+          <div class="link"><a>領取股利</a></div>
+          <div class="link">
+            <a
+              onclick="window.open('/new_account', 'acc', 'width=500, height=300')"
+              >新增帳戶</a
+            >
+          </div>
+          <div style="margin-top: 60vh; font-size: 50%;">資料時間: {{data_date}}</div>
+        </div>
+      </div>
+        <div class="table">
+            <table class="outside">
+                <tr>
+                    <th>股票代號</th>
+                    <th>庫存量</th>
+                    <th>付出成本</th>
+                    <th>成本均價</th>
+                    <th>現價</th>
+                    <th>現值</th>
+                    <th>損益</th>
+                    <th>獲利率</th>
+                </tr>
+                {% for code, amount, cost, average_cost, latest_price, latest_value, profit, per_profit, details in data %}
+                <tr onclick="expand({{forloop.counter0}})">
+                    <td>{{code}}</td>
+                    <td>{{amount}}</td>
+                    <td>{{cost}}</td>
+                    <td>{{average_cost}}</td>
+                    <td>{{latest_price}}</td>
+                    <td>{{latest_value}}</td>
+                    {% if profit > 0 %}
+                        <td class="rise">{{profit}}</td>
+                        <td class="rise">{{per_profit}}%</td>
+                    {% else %}
+                        <td class="fall">{{profit}}</td>
+                        <td class="fall">{{per_profit}}%</td>
+                    {% endif %}
+
+                </tr>
+                <tr id={{forloop.counter0}} class="detail">
+                    <td colspan="8">
+                        <p style="text-align: left; margin: 2%">交易紀錄:</p>
+                        <table class="inside">
+                            <tr>
+                                <th>交易日期</th>
+                                <th>成交價</th>
+                                <th>數量</th>
+                                <th>手續費</th>
+                            </tr>
+                            {% for date, price, amount, fee in details %}
+                                <tr>
+                                    <td>{{date}}</td>
+                                    <td>{{price}}</td>
+                                    <td>{{amount}}</td>
+                                    <td>{{fee}}</td>
+                                </tr>
+                            {% endfor %}
+                        </table>
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+      </div> <!-- for line 25 -->
+      </div>
+    </div>
+  </body>
+</html>
+
+<style>
+  @font-face {
+    font-family: chn;
+    src: url("https://fonts.googleapis.com/earlyaccess/cwtexfangsong.css");
+  }
+  body {
+    margin: 0;
+/*    background-color: white;*/
+  }
+  .account{
+    margin-right: 2%;
+    width: 20%;
+    height: 50%;
+    text-align: center;
+  }
+
+  .account_sections {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-start;
+    width: 83%;
+    margin: 2%;
+  }
+  .nav {
+    background-color: #ebebe9;
+    color: #53565c;
+    width: 15%;
+    height: 100vh;
+    /*    font-family: chn;*/
+  }
+  .nav > div {
+    padding: 5%;
+  }
+  .link {
+    /*color: white;*/
+    padding: 2% 5% 2% 5%;
+    border-bottom: 2px dashed #ab8c83;
+  }
+  .row{
+    padding: 5% 0 5% 0;
+    font-size: 1vw; 
+  }
+  .tag{
+    width: 40%; 
+    font-size: 1.2vw; 
+    padding: 2%;
+    border-radius: 5px 5px 0 0;
+  }
+  .delete{
+    text-align: right;
+    font-size: 0.1vw;
+    padding: 2%;
+    color: #93939b;
+  }
+  .detail{
+    display: none;
+    font-size: 50%;
+    color: #877865;
+  }
+  .pad{
+    box-shadow: 5px 5px #7c86a1;
+  }
+  .winered{
+    color: #8d6a6e;
+    font-size: 1.5vw;
+    font-family: "Courier New"
+  }
+
+  .inline{
+    display: inline-block
+  }
+  .table{
+    text-align: center;
+    margin: 5% 0 0 5%;
+    color: #53565c;
+    width: 60%;
+  }
+  .outside{
+    width: 100%;
+    color: #2a4c65;
+  }
+  .inside{
+    width: 96%;
+    margin: 2%;
+  }
+  .outside th{
+    background-color: #c9d3d5;
+  }
+  .inside th{
+    background-color: #eef1ea;
+    /*background-color: #dfdcd5;*/
+  }
+  table, td, th{
+    border: 1px solid #ebebe9;
+    border-collapse: collapse;
+  }
+  th{
+    border: 1px solid white;
+    border-style: none solid none none;
+  }
+
+  button{
+/*    color: #93939b;*/
+    color: #c9d3d5;
+    background-color: transparent;
+    border: none;
+  }
+  button:hover{
+    color: #7197a4;
+  }
+</style>
+<script>
+    var content = document.getElementsByClassName("detail");
+    function expand(i){
+        $("#" + i).toggle();
+        }
+    
+</script>
+           

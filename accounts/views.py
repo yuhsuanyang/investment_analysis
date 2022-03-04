@@ -3,6 +3,7 @@ from django.shortcuts import render, redirect
 from .models import Account
 from transactions.models import TransactionData
 from stock_prices.models import StockPriceData
+from utils import queryset2df
 
 
 # Create your views here.
@@ -44,3 +45,34 @@ def delete_account(request):
         print(f"{code} delete")
 
     return render(request, 'delete_account.html', context={'account': name})
+
+
+def display_stocks(requests, account):
+    transactions = TransactionData.objects.all().filter(account=account)
+    transaction_df = queryset2df(transactions).sort_values('code').reset_index(
+        drop=True)
+    all_prices = StockPriceData.objects.all().order_by('-date')
+    print(transaction_df)
+    transaction_by_stock = []
+    for code in transaction_df['code'].unique():
+        df = transaction_df[transaction_df['code'] == code]
+        details = []
+        for i in range(len(df)):
+            details.append([
+                datetime.strftime(df.iloc[i]['date'], '%Y-%m-%d'),
+                df.iloc[i]['price'], df.iloc[i]['amount'], df.iloc[i]['fee']
+            ])
+
+        price = all_prices.filter(code=code)[0]
+        latest_value = round(price.price * df['amount'].sum() *
+                             (1 - 0.003 - 0.001425))
+        cost = (df['price'] * df['amount'] + df['fee']).sum()
+        transaction_by_stock.append([
+            code, df['amount'].sum(), cost,
+            round(cost / df['amount'].sum(), 2),
+            round(price.price, 2), latest_value,
+            round(latest_value - cost, 2),
+            round(100 * (latest_value - cost) / cost, 2), details
+        ])
+    data = {'name': account, 'data': transaction_by_stock}
+    return render(requests, 'account.html', context=data)

@@ -80,6 +80,9 @@ def get_account_overview(df):
 
 
 def display_stock_condition(requests):
+    with open(f"{ROOT}/stock_prices/data_date_record.txt", 'r') as f:
+        record_date = f.read().strip()
+
     if datetime.now().hour >= 14:  # update close prices after 14
         update_data()
 
@@ -103,14 +106,17 @@ def display_stock_condition(requests):
         'code', 'account', 'date', 'price', 'latest_price', 'today'
     ]])
 
-    accounts = Account.objects.values('name').distinct()
-    accounts = {acc['name']: {} for acc in accounts}
-    data = {'account': []}
+    accounts = Account.objects.all()
+    #    accounts_data = {acc.name: {} for acc in accounts}
+    accounts_data = {}
+    data = {'account': [], 'data_date': record_date}
     for acc in accounts:
-        accounts[acc] = transaction_df[transaction_df['account'] == acc]
-        total_value = get_account_overview(accounts[acc])
+        accounts_data[acc.name] = transaction_df[transaction_df['account'] ==
+                                                 acc.name]
+        total_value = get_account_overview(accounts_data[acc.name])
         data['account'].append([
-            acc,
+            acc.name,
+            acc.get_absolute_url(),
             round(total_value['total_investment']),
             round(total_value['stock_profit_loss'])
         ])

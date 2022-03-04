@@ -8,7 +8,7 @@
       <div class="nav">
         <div style="font-size: 2vw">投資組合損益</div>
         <div style="font-size: 1.2vw">
-          <div class="link"><a>首頁</a></div>
+            <div class="link"><a style="color: #54565C" href="/index">首頁</a></div>
           <div class="link">
             <a
               onclick="window.open('/new_transaction', 'buy', 'width=500, height=300')"
@@ -23,11 +23,12 @@
               >新增帳戶</a
             >
           </div>
+          <div style="margin-top: 60vh; font-size: 50%;">資料時間: {{data_date}}</div>
         </div>
       </div>
       <div class="account_sections">
-        {% for account_name, total_value, stock_profit_loss in account%}
-          <div class="account">
+        {% for account_name, url, total_value, stock_profit_loss in account%}
+        <div class="account" onclick="location.href='{{url}}';">
               <div class="lightgrayblue grayblue tag">
                   <p><b>{{account_name}}</b></p>
               </div>
@@ -62,9 +63,13 @@
               </div> <!-- for line 30 -->
             </div> <!-- for line 26 -->
             {% endfor %}
-        <div
-            style="width: 200px; height: 200px; background-color: #ebe2e5"
-            ></div>
+        <div class="account"
+            style="width: 200px; height: 200px; background-color: #ebe2e5; border-radius: 5px;"
+            >
+            <div class="row">
+                <p style="color: #8d6a6e"><b>合計</b></p>
+            </div>
+        </div>
       </div> <!-- for line 25 -->
       </div>
     </div>

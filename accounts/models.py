@@ -1,4 +1,5 @@
 from django.db import models
+from django.urls import reverse
 
 
 # Create your models here.
@@ -10,3 +11,9 @@ class Account(models.Model):
 
     def __str__(self):
         return f"{self.name} {self.record_date}"
+
+    def get_absolute_url(self):
+        print(reverse('account', args=[self.name]))
+        return reverse('account', args=[self.name])
+
+#      return f"/account/{self.name}"
