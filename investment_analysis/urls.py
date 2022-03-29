@@ -16,7 +16,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from django.views.generic import TemplateView
-from transactions.views import transaction_form
+from transactions.views import buy_transaction_form, sell_transaction_form
 from accounts.views import account_form, delete_account, display_stocks
 from stock_prices.views import display_stock_condition
 
@@ -24,7 +24,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('index/', display_stock_condition, name='index'),
     path('account/<account>/', display_stocks, name='account'),
-    path('new_transaction/', transaction_form, name='new_transaction'),
+    path('buy/', buy_transaction_form, name='buy'),
+    path('sell/', sell_transaction_form, name='sell'),
     path('new_account/', account_form, name='new_account'),
     path('delete_account/', delete_account, name='delete_account'),
     path(
