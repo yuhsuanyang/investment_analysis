@@ -47,8 +47,9 @@ def update_data():
 
     else:
         print('stock price data is already up-to-date')
+        return record_date.strftime('%Y-%m-%d')
 
-    return
+    return latest_date
 
 
 def initial_stock_price(df):
@@ -83,10 +84,19 @@ def display_stock_condition(requests):
     with open(f"{ROOT}/stock_prices/data_date_record.txt", 'r') as f:
         record_date = f.read().strip()
 
-    if datetime.now().hour >= 14:  # update close prices after 14
-        update_data()
+#    record_date = datetime.strptime(record_date, '%Y-%m-%d').date()
+    if datetime.strptime(
+            record_date,
+            '%Y-%m-%d').date() <= today - timedelta(days=1) or datetime.now(
+            ).hour >= 14:  # update close prices after 14
+        latest_date = update_data()
+    else:
+        latest_date = record_date
 
     stocks_all = TransactionData.objects.all()
+    if not len(stocks_all):
+        return render(requests, 'index.html', context={})
+
     transaction_df = queryset2df(stocks_all).sort_values('date').reset_index(
         drop=True)
 
@@ -107,9 +117,10 @@ def display_stock_condition(requests):
     ]])
 
     accounts = Account.objects.all()
-    #    accounts_data = {acc.name: {} for acc in accounts}
+    #    accounts = []
+    accounts_data = {acc.name: {} for acc in accounts}
     accounts_data = {}
-    data = {'account': [], 'data_date': record_date}
+    data = {'account': [], 'data_date': latest_date}
     for acc in accounts:
         accounts_data[acc.name] = transaction_df[transaction_df['account'] ==
                                                  acc.name]
