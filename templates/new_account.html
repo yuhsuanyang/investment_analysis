@@ -3,20 +3,20 @@
   <body>
     <form action="" method="POST">
       {% csrf_token %}
-      <div style="margin-bottom: 5%">
+      <div style="display: flex; width: 100%; justify-content: space-between">
         <label>帳戶名稱:</label>
         <input type="text" maxlength="30" name="acc_name" />
+        <input type="submit" value="新增" />
       </div>
-      <div style="text-align: right"><input type="submit" value="新增" /></div>
     </form>
   </body>
 </html>
 <style>
   form {
     position: absolute;
-    width: 40vw;
+    width: 60vw;
     height: 40vh;
-    left: 30vw;
+    left: 20vw;
     top: 30vh;
     text-align: center;
   }
