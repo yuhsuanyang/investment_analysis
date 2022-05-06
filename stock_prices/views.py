@@ -112,17 +112,18 @@ def display_stock_condition(requests):
         'code', 'account', 'date', 'price', 'latest_price', 'today'
     ]])
 
-    accounts = Account.objects.all()
-    accounts_data = {acc.name: {} for acc in accounts}
+    accounts = {
+        acc.name: acc.get_absolute_url()
+        for acc in Account.objects.all()
+    }
+    print(accounts)
     accounts_data = {}
     data = {'account': [], 'data_date': latest_date}
     for acc in accounts:
-        accounts_data[acc.name] = transaction_df[transaction_df['account'] ==
-                                                 acc.name]
-        total_value = get_account_overview(accounts_data[acc.name])
+        accounts_data[acc] = transaction_df[transaction_df['account'] == acc]
+        total_value = get_account_overview(accounts_data[acc])
         data['account'].append([
-            acc.name,
-            acc.get_absolute_url(),
+            acc, accounts[acc],
             round(total_value['total_investment']),
             round(total_value['stock_profit_loss'])
         ])

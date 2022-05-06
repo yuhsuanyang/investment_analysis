@@ -8,6 +8,7 @@ class TransactionData(models.Model):
     account = models.CharField(max_length=30, help_text="帳戶")
     price = models.FloatField(help_text="成交價")
     amount = models.IntegerField(help_text="成交量")
+    # amount > 0: buy, amount < 0: sell
     fee = models.FloatField(help_text="手續費")
 
     def __str__(self):

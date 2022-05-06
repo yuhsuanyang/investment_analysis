@@ -19,6 +19,28 @@ def main(request):
     return render(request, 'index.html', context=data)
 
 
+def cal_profit(sell_price, buy_price, amount, fee):
+    return amount * (sell_price - buy_price) * (1 - 0.003) - fee
+
+
+def cal_realized_profit(df_transaction, sell_price, total_sell_amount,
+                        sell_fee):
+    profit = 0
+    for i in range(len(df_transaction)):
+        stock_amount = df_transaction.iloc[i]['amount']
+        buy_price = df_transaction.iloc[i]['price']
+        buy_fee = df_transaction.iloc[i]['fee']
+        if stock_amount >= total_sell_amount:
+            profit += cal_profit(sell_price, buy_price, total_sell_amount,
+                                 buy_fee * (total_sell_amount / stock_amount))
+            total_sell_amount = max(0, total_sell_amount - stock_amount)
+            break
+        else:
+            profit += cal_profit(sell_price, buy_price, stock_amount, buy_fee)
+            total_sell_amount -= stock_amount
+    return profit - sell_fee
+
+
 def buy_transaction_form(request):
     accounts = [acc.name for acc in Account.objects.all()]
     print(ROOT)
@@ -61,36 +83,51 @@ def buy_transaction_form(request):
 def sell_transaction_form(request):
     accounts = [acc.name for acc in Account.objects.all()]
     if request.method == "POST":
-        stock_code = request.POST['stock_code']
+        stock_code = request.POST['stock_code'].split(' ')[0]
         date = request.POST['date']
         account = request.POST['account']
         stock_price = request.POST['stock_price']
         stock_amount = request.POST['stock_amount']
+        #        stock_amount1 = request.POST['stock_amount']
         fee = request.POST['fee']
 
         transaction_records = TransactionData.objects.all().filter(
             account=account).filter(code=stock_code)
-        if not len(transaction_records) or queryset2df(
-                transaction_records)['amount'].sum() < stock_amount:  # 庫存量不足
+        print(stock_code, account)
+        transaction_record_df = queryset2df(transaction_records)
+        print(transaction_record_df)
+        if not len(transaction_records) or transaction_record_df['amount'].sum(
+        ) < int(stock_amount):  # 庫存量不足
             return render(request,
                           'warning.html',
                           context={'message': f'{stock_code}庫存量不足！'})
 
+        profit = cal_realized_profit(transaction_record_df, float(stock_price),
+                                     int(stock_amount), int(fee))
+        realized_profit = Account(
+            name=account,
+            record_date=date,
+            realized_profit=profit,
+        )
+        realized_profit.save()
+
         transaction = TransactionData(code=stock_code.split(' ')[0],
                                       date=date,
-                                      account=(-1) * account,
+                                      account=account,
                                       price=stock_price,
-                                      amount=stock_amount,
+                                      amount=(-1) * int(stock_amount),
                                       fee=fee)
         transaction.save()
 
-        transaction_records = TransactionData.objects.all().filter(
-            account=account).filter(code=stock_code)
-        transaction_df = queryset2df(transaction_records)
-        if not transaction_df['amount'].sum():  #全部賣出 加到已實現損益
-            #            transaction_records.delete()
 
-            print('sold out')
+#        transaction_records = TransactionData.objects.all().filter(
+#            account=account).filter(code=stock_code)
+#        transaction_df = queryset2df(transaction_records)
+
+#        if not transaction_df['amount'].sum():  # 全部賣出 加到已實現損益
+#            transaction_records.delete()
+
+#            print(f'{stock_code} sold out')
 
     data = {
         'accounts': accounts,
