@@ -19,11 +19,7 @@ def account_form(request):
     if request.method == "POST":
         name = request.POST['acc_name']
         date = datetime.today().date()
-        new_account = Account(name=name,
-                              record_date=date,
-                              realized_profit=0,
-                              unrealized_profit=0,
-                              cost=0)
+        new_account = Account(name=name, record_date=date, realized_profit=0)
         new_account.save()
         print(f"account {name} created!")
         return render(request,
@@ -35,6 +31,20 @@ def account_form(request):
 
 #        return redirect('/new_account')
     return render(request, 'new_account.html', context=data)
+
+
+def cal_left_overs(buy_df, sold_amount):
+    for i in range(len(buy_df)):
+        stock_amount = buy_df.iloc[i]['amount']
+        buy_fee = buy_df.iloc[i]['fee']
+        if sold_amount >= stock_amount:
+            buy_df.loc[i, 'amount'] = 0
+            sold_amount -= stock_amount
+        else:
+            buy_df.loc[i, 'amount'] = stock_amount - sold_amount
+            buy_df.loc[i, 'fee'] = buy_fee * (1 - sold_amount / stock_amount)
+            break
+    return buy_df
 
 
 def delete_account(request):
@@ -60,6 +70,7 @@ def delete_account(request):
     return render(request, 'delete_account.html', context={'account': name})
 
 
+# show unrealized profit
 def display_stocks(requests, account):
     with open(f"{ROOT}/stock_prices/data_date_record.txt", 'r') as f:
         record_date = f.read().strip()
@@ -73,6 +84,12 @@ def display_stocks(requests, account):
     for code in transaction_df['code'].unique():
         name = stock_codes[stock_codes['code'] == code]['name'].iloc[0]
         df = transaction_df[transaction_df['code'] == code]
+        buy_df = df[df['amount'] > 0].reset_index(drop=True)
+        sold_amount = df[df['amount'] < 0]['amount'].sum() * (-1)
+        if sold_amount:
+            buy_df = cal_left_overs(buy_df, sold_amount)
+            print(buy_df)
+
         details = []
         for i in range(len(df)):
             details.append([
@@ -83,7 +100,7 @@ def display_stocks(requests, account):
         price = all_prices.filter(code=code)[0]
         latest_value = round(price.price * df['amount'].sum() *
                              (1 - 0.003 - 0.001425))
-        cost = (df['price'] * df['amount'] + df['fee']).sum()
+        cost = (buy_df['price'] * buy_df['amount'] + buy_df['fee']).sum()
         transaction_by_stock.append([
             f"{code} {name}", df['amount'].sum(), cost,
             round(cost / df['amount'].sum(), 2),
@@ -96,4 +113,50 @@ def display_stocks(requests, account):
         'data': transaction_by_stock,
         'data_date': record_date
     }
+    df_profits = show_profits(account)
+    #    print(df_profits)
     return render(requests, 'account.html', context=data)
+
+
+def get_month_end_data():
+    df_stock_price = queryset2df(StockPriceData.objects.all())
+    df_stock_price['month'] = df_stock_price['date'].apply(
+        lambda x: datetime.strftime(x, '%Y-%m'))
+    df_stock_price['date'] = df_stock_price['date'].apply(
+        lambda x: datetime.strftime(x, '%d'))
+    df_stock_price = df_stock_price.sort_values(by=['month', 'date'])
+    last_month_date_index = []
+    for code in df_stock_price['code'].unique():
+        df_code = df_stock_price[df_stock_price['code'] == code]
+        for month in df_code['month'].unique():
+            last_month_date_index.append(
+                df_code[df_code['month'] == month].index[-1])
+    return df_stock_price.loc[last_month_date_index]
+
+
+#def show_profits(requests, account):
+def show_profits(account):
+    transactions = TransactionData.objects.all().filter(account=account)
+    df_close_price = get_month_end_data()
+    df = queryset2df(transactions).sort_values(by='date')
+    df['month'] = df['date'].apply(lambda x: datetime.strftime(x, '%Y-%m'))
+    profits = []
+    for i in range(len(df_close_price)):
+        code = df_close_price['code'].iloc[i]
+        month = df_close_price['month'].iloc[i]
+        close_price = df_close_price['price'].iloc[i]
+        df_code_stock = df[df['code'] == code]
+        for j in range(len(df_code_stock)):
+            if df_code_stock['month'].iloc[j] <= month:
+                cost = df_code_stock['price'].iloc[j] * df_code_stock[
+                    'amount'].iloc[j] + df_code_stock['fee'].iloc[j]
+                profit = (close_price - df_code_stock['price'].iloc[j]
+                          ) * df_code_stock['amount'].iloc[j] * (
+                              1 - 0.003 -
+                              0.001425) - df_code_stock['fee'].iloc[j]
+                profits.append([code, month, round(profit), cost])
+    df_profit = pd.DataFrame(profits,
+                             columns=['code', 'month', 'profit', 'cost'])
+    df_by_month = df_profit[['month', 'profit',
+                             'cost']].groupby(by='month').sum()
+    return df_by_month
