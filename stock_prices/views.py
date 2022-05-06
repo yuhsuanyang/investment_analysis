@@ -11,7 +11,7 @@ from utils import queryset2df
 # print(transaction_df)
 
 ROOT = Path(__file__).resolve().parent.parent
-today = datetime.now().date()  #.strftime('%Y-%m-%d')
+today = datetime.now().date()
 
 
 # Create your views here.
@@ -22,16 +22,10 @@ def download_stock_price(stock_code, start_date, end_date):
     return pd.DataFrame({'date': list(df.index), 'close': df['Close'].values})
 
 
-def update_data():
-    with open(f"{ROOT}/stock_prices/data_date_record.txt", 'r') as f:
-        record_date = f.read().strip()
-    print(record_date)
-    record_date = datetime.strptime(record_date, '%Y-%m-%d').date()
-    if record_date < today:
+def update_data(start_date, end_date):
+    if (end_date - start_date).days > 1:
         print('updating data...')
         codes = StockPriceData.objects.values('code').distinct()
-        start_date = (record_date + timedelta(days=1)).strftime('%Y-%m-%d')
-        end_date = (today + timedelta(days=1)).strftime('%Y-%m-%d')
         for code in codes:
             prices = download_stock_price(code['code'], start_date, end_date)
             for i in range(len(prices)):
@@ -42,12 +36,15 @@ def update_data():
         latest_date = StockPriceData.objects.values('date').order_by(
             '-date').distinct()[0]['date']
         latest_date = latest_date.strftime('%Y-%m-%d')
+
         with open(f"{ROOT}/stock_prices/data_date_record.txt", 'w') as f:
             f.write(latest_date)
 
     else:
+        latest_date = StockPriceData.objects.values('date').order_by(
+            '-date').distinct()[0]['date']
+        latest_date = latest_date.strftime('%Y-%m-%d')
         print('stock price data is already up-to-date')
-        return record_date.strftime('%Y-%m-%d')
 
     return latest_date
 
@@ -84,14 +81,13 @@ def display_stock_condition(requests):
     with open(f"{ROOT}/stock_prices/data_date_record.txt", 'r') as f:
         record_date = f.read().strip()
 
-#    record_date = datetime.strptime(record_date, '%Y-%m-%d').date()
-    if datetime.strptime(
-            record_date,
-            '%Y-%m-%d').date() <= today - timedelta(days=1) or datetime.now(
-            ).hour >= 14:  # update close prices after 14
-        latest_date = update_data()
-    else:
-        latest_date = record_date
+    record_date = datetime.strptime(record_date, '%Y-%m-%d').date()
+    if datetime.now().hour >= 14:  # 14 點以後更新今日收盤價
+        end_date = today + timedelta(days=1)
+    else:  # 14 點前更新昨日收盤價
+        end_date = today
+    print(record_date, end_date)
+    latest_date = update_data(record_date, end_date)
 
     stocks_all = TransactionData.objects.all()
     if not len(stocks_all):
@@ -117,7 +113,6 @@ def display_stock_condition(requests):
     ]])
 
     accounts = Account.objects.all()
-    #    accounts = []
     accounts_data = {acc.name: {} for acc in accounts}
     accounts_data = {}
     data = {'account': [], 'data_date': latest_date}
