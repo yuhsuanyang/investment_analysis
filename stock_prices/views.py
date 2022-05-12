@@ -122,10 +122,18 @@ def display_stock_condition(requests):
     for acc in accounts:
         accounts_data[acc] = transaction_df[transaction_df['account'] == acc]
         total_value = get_account_overview(accounts_data[acc])
+        total_value['realized_profit'] = round(
+            sum([
+                acc.realized_profit for acc in Account.objects.filter(name=acc)
+            ]))
+        print(total_value)
         data['account'].append([
             acc, accounts[acc],
             round(total_value['total_investment']),
-            round(total_value['stock_profit_loss'])
+            round(total_value['stock_profit_loss']) +
+            total_value['realized_profit'],
+            round(total_value['stock_profit_loss']),
+            total_value['realized_profit']
         ])
 
 

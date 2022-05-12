@@ -27,25 +27,27 @@
         </div>
       </div>
       <div class="account_sections">
-        {% for account_name, url, total_value, stock_profit_loss in account%}
+        {% for account_name, url, total_value, total_profit, stock_profit_loss, realized_profit in account%}
         <div class="account" onclick="location.href='{{url}}';">
               <div class="lightgrayblue grayblue tag">
                   <p><b>{{account_name}}</b></p>
               </div>
               <div class="lightgrayblue" style="border-radius: 0 5px 5px 5px">
                 <div class="row">
-                  <p class="grayblue inline">投資總額</p>
-                  <p class="winered inline"><b>{{total_value}}</b></p>
+                  <p class="grayblue">投資總額</p>
+                  <p class="winered"><b>{{total_value}}</b></p>
                 </div>
                 <div class="row">
-                    <p class="grayblue">投資總損益</p>
+                  <p class="grayblue">投資總損益</p>
+                  <p class="winered"><b>{{total_profit}}</b></p>
                 </div>
                 <div class="row">
-                    <p class="grayblue inline">庫存總損益</p>
-                    <p class="winered inline"><b>{{stock_profit_loss}}</b></p>
+                    <p class="grayblue">庫存總損益</p>
+                    <p class="winered"><b>{{stock_profit_loss}}</b></p>
                 </div>
                 <div class="row">
                     <p class="grayblue">已實現損益</p>
+                    <p class="winered"><b>{{realized_profit}}</b></p>
                 </div>
                 <div class="row">
                     <p class="grayblue">報酬率</p>
@@ -140,7 +142,10 @@
   }
 
   .inline{
-    display: inline-block
+    display: inline-block;
+  }
+  .row > p{
+    display: inline-block;
   }
   p{
     margin: 0;
