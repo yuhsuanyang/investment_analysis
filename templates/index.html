@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+{%load math_operations %}
 <html>
   <head>
     <link rel="stylesheet" href="/css/styles.css" type="text/css"/>
@@ -51,12 +52,15 @@
                 </div>
                 <div class="row">
                     <p class="grayblue">報酬率</p>
+                    <p class="winered"><b>{{total_profit|ptg:total_value}}%</b></p>
                 </div>
                 <div class="row">
                     <p class="grayblue">庫存報酬率</p>
+                    <p class="winered"><b>{{stock_profit_loss|ptg:total_value}}%</b></p>
                 </div>
                 <div class="row">
                     <p class="grayblue">已實現報酬率</p>
+                    <p class="winered"><b>{{realized_profit|ptg:total_value}}%</b></p>
                 </div>
                 <form action="{% url 'delete_account' %}" class="delete" method="post">
                     {% csrf_token %}
