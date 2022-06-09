@@ -18,14 +18,17 @@ def account_form(request):
     data = {}
     if request.method == "POST":
         name = request.POST['acc_name']
-        date = datetime.today().date()
-        new_account = Account(name=name, record_date=date, realized_profit=0)
-        new_account.save()
-        print(f"account {name} created!")
+        if not len(name):
+            msg = '帳戶名不可為空!'
+        else:
+            new_account = Account(name=name)
+            new_account.save()
+            msg = f"已新增帳戶{name}!"
+        print(msg)
         return render(request,
                       'account_success_message.html',
                       context={
-                          'name': name,
+                          'msg': msg,
                       })
 
 
@@ -70,25 +73,29 @@ def delete_account(request):
     return render(request, 'delete_account.html', context={'account': name})
 
 
-# show unrealized profit
-def display_stocks(requests, account):
-    with open(f"{ROOT}/stock_prices/data_date_record.txt", 'r') as f:
-        record_date = f.read().strip()
-
+def display_unrealized_profit(account):
     transactions = TransactionData.objects.all().filter(account=account)
+    return 0, 0
     transaction_df = queryset2df(transactions).sort_values('code').reset_index(
         drop=True)
     all_prices = StockPriceData.objects.all().order_by('-date')
-    print(transaction_df)
+    #    print(transaction_df)
+    # unrealized profit
     transaction_by_stock = []
     for code in transaction_df['code'].unique():
         name = stock_codes[stock_codes['code'] == code]['name'].iloc[0]
         df = transaction_df[transaction_df['code'] == code]
+        print(df)
+        print('-' * 20)
         buy_df = df[df['amount'] > 0].reset_index(drop=True)
         sold_amount = df[df['amount'] < 0]['amount'].sum() * (-1)
-        if sold_amount:
+        if not df['amount'].sum():
+            continue
+        else:
             buy_df = cal_left_overs(buy_df, sold_amount)
-            print(buy_df)
+
+
+#            print(buy_df)
 
         details = []
         for i in range(len(df)):
@@ -108,13 +115,33 @@ def display_stocks(requests, account):
             round(latest_value - cost, 2),
             round(100 * (latest_value - cost) / cost, 2), details
         ])
+    return transaction_df, transaction_by_stock
+
+
+def display_profits(requests, account):
+    with open(f"{ROOT}/stock_prices/data_date_record.txt", 'r') as f:
+        record_date = f.read().strip()
+    transaction_df, unrealized_profit = display_unrealized_profit(account)
+    if not transaction_df:
+        data = {'name': account}
+        return render(requests, 'account.html', context=data)
+    account_records = Account.objects.filter(name=account)
+    sold_stock = transaction_df[transaction_df['amount'] < 0]
+    realized_profit = []
+    for i in range(len(sold_stock)):
+        profit = account_records.filter(
+            record_date=sold_stock.iloc[i]['date'])[0].realized_profit
+        realized_profit.append([
+            sold_stock.iloc[i]['code'], sold_stock.iloc[i]['date'],
+            abs(sold_stock.iloc[i]['amount']),
+            round(profit)
+        ])
+
     data = {
         'name': account,
-        'data': transaction_by_stock,
+        'data': unrealized_profit,
         'data_date': record_date
     }
-    df_profits = show_profits(account)
-    #    print(df_profits)
     return render(requests, 'account.html', context=data)
 
 

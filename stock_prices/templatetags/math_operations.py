@@ -20,4 +20,9 @@ def multiply(a, b):
 
 @register.filter
 def ptg(a, b):
-    return round((a / b) * 100, 2)
+    try:
+        value = round((a / b) * 100, 2)
+        print('try')
+    except ZeroDivisionError:
+        value = '--'
+    return value
