@@ -71,8 +71,11 @@ def initial_stock_price(df):
 
 def get_total_realized_profit():
     realized_profit_df = queryset2df(RealizedProfit.objects.all())
-    return realized_profit_df.groupby(
-        by='account')['profit'].sum().reset_index()
+    if len(realized_profit_df):
+        return realized_profit_df.groupby(
+            by='account')['profit'].sum().reset_index()
+    else:
+        return pd.DataFrame([], columns=['account', 'profit'])
 
 
 def display_stock_condition(requests):
@@ -108,6 +111,7 @@ def display_stock_condition(requests):
     initial_stock_price(transaction_df)
     data = {'account': [], 'data_date': latest_date}
     realized_profit = get_total_realized_profit()
+    print(realized_profit)
     for acc in accounts:
         #        accounts_data[acc] = transaction_df[transaction_df['account'] == acc]
         _, current_stocks = display_unrealized_profit(acc)
@@ -120,8 +124,11 @@ def display_stock_condition(requests):
         total_value = {}
         total_value['total_investment'] = unrealized_profit['cost'].sum()
         total_value['stock_profit_loss'] = unrealized_profit['profit'].sum()
-        total_value['realized_profit'] = realized_profit[
-            realized_profit['account'] == acc]['profit'].iloc[0]
+        if acc in realized_profit['account'].values:
+            total_value['realized_profit'] = realized_profit[
+                realized_profit['account'] == acc]['profit'].iloc[0]
+        else:
+            total_value['realized_profit'] = 0
 
         print(total_value)
         data['account'].append([

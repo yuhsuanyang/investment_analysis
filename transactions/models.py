@@ -28,6 +28,7 @@ class TransactionData(models.Model):
 class RealizedProfit(models.Model):
     code = models.CharField(max_length=10, help_text="股票代碼")
     date = models.DateField(help_text="交易日期")
+    amount = models.IntegerField(help_text="成交量")
     account = models.CharField(max_length=30, help_text="帳戶")
     profit = models.FloatField(help_text='損益')
 
@@ -36,7 +37,7 @@ class RealizedProfit(models.Model):
 
     @classmethod
     def columns(cls):
-        return ['code', 'date', 'account', 'profit']
+        return ['code', 'date', 'account', 'amount', 'profit']
 
     def get_values(self):
-        return [self.code, self.date, self.account, self.profit]
+        return [self.code, self.date, self.account, self.amount, self.profit]

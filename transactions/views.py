@@ -109,6 +109,7 @@ def sell_transaction_form(request):
         realized_profit = RealizedProfit(code=stock_code,
                                          date=date,
                                          account=account,
+                                         amount=int(stock_amount),
                                          profit=profit)
         realized_profit.save()
 
