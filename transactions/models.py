@@ -23,3 +23,20 @@ class TransactionData(models.Model):
             self.code, self.date, self.account, self.price, self.amount,
             self.fee
         ]
+
+
+class RealizedProfit(models.Model):
+    code = models.CharField(max_length=10, help_text="股票代碼")
+    date = models.DateField(help_text="交易日期")
+    account = models.CharField(max_length=30, help_text="帳戶")
+    profit = models.FloatField(help_text='損益')
+
+    def __str__(self):
+        return f"{self.code} {self.date}"
+
+    @classmethod
+    def columns(cls):
+        return ['code', 'date', 'account', 'profit']
+
+    def get_values(self):
+        return [self.code, self.date, self.account, self.profit]

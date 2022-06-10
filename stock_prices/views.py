@@ -4,8 +4,9 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from django.shortcuts import render
 from .models import StockPriceData
-from transactions.models import TransactionData
+from transactions.models import TransactionData, RealizedProfit
 from accounts.models import Account
+from accounts.views import display_unrealized_profit
 from utils import queryset2df
 
 # print(transaction_df)
@@ -68,16 +69,28 @@ def initial_stock_price(df):
                 stock_price_row.save()
 
 
-def get_account_overview(df):
-    data = {}
-    data['total_investment'] = (df['amount'] * df['price'] + df['fee']).sum()
-    data['stock_profit_loss'] = (
-        (df['latest_price'] - df['price']) * df['amount'] - df['fee'] -
-        df['sell_cost']).sum()
-    return data
+def get_total_realized_profit():
+    realized_profit_df = queryset2df(RealizedProfit.objects.all())
+    return realized_profit_df.groupby(
+        by='account')['profit'].sum().reset_index()
 
 
 def display_stock_condition(requests):
+    accounts = {
+        acc.name: acc.get_absolute_url()
+        for acc in Account.objects.all()
+    }
+    stocks_all = TransactionData.objects.all()
+    print(accounts)
+    if not len(accounts):
+        return render(requests, 'index.html', context={})
+
+    if not len(stocks_all):
+        data = {'account': []}
+        for acc in accounts:
+            data['account'].append([acc, accounts[acc], 0, 0, 0, 0])
+        return render(requests, 'index.html', context=data)
+
     with open(f"{ROOT}/stock_prices/data_date_record.txt", 'r') as f:
         record_date = f.read().strip()
 
@@ -89,51 +102,35 @@ def display_stock_condition(requests):
     print(record_date, end_date)
     latest_date = update_data(record_date, end_date)
 
-    stocks_all = TransactionData.objects.all()
-    if not len(stocks_all):
-        return render(requests, 'index.html', context={})
-
     transaction_df = queryset2df(stocks_all).sort_values('date').reset_index(
         drop=True)
 
     initial_stock_price(transaction_df)
-    all_prices = StockPriceData.objects.all().order_by('-date')
-    latest_price = []
-    for i in range(len(transaction_df)):
-        price = all_prices.filter(code=transaction_df['code'][i])[0]
-        #        print(price)
-        latest_price.append([price.date, round(price.price, 2)])
-    transaction_df[['today', 'latest_price']] = pd.DataFrame(latest_price)
-    transaction_df['sell_cost'] = transaction_df[
-        'latest_price'] * transaction_df['amount'] * (
-            0.003 + 0.001425)  # 0.003: 證交稅 0.001425: 賣出手續費
-    transaction_df['sell_cost'] = round(transaction_df['sell_cost'])
-    print(transaction_df[[
-        'code', 'account', 'date', 'price', 'latest_price', 'today'
-    ]])
-
-    accounts = {
-        acc.name: acc.get_absolute_url()
-        for acc in Account.objects.all()
-    }
-    print(accounts)
-    accounts_data = {}
     data = {'account': [], 'data_date': latest_date}
+    realized_profit = get_total_realized_profit()
     for acc in accounts:
-        accounts_data[acc] = transaction_df[transaction_df['account'] == acc]
-        total_value = get_account_overview(accounts_data[acc])
-        total_value['realized_profit'] = round(
-            sum([
-                acc.realized_profit for acc in Account.objects.filter(name=acc)
-            ]))
+        #        accounts_data[acc] = transaction_df[transaction_df['account'] == acc]
+        _, current_stocks = display_unrealized_profit(acc)
+        unrealized_profit = [[
+            current_stocks[i][0], current_stocks[i][2], current_stocks[i][6]
+        ] for i in range(len(current_stocks))]
+        unrealized_profit = pd.DataFrame(unrealized_profit,
+                                         columns=['code', 'cost', 'profit'])
+        print(unrealized_profit)
+        total_value = {}
+        total_value['total_investment'] = unrealized_profit['cost'].sum()
+        total_value['stock_profit_loss'] = unrealized_profit['profit'].sum()
+        total_value['realized_profit'] = realized_profit[
+            realized_profit['account'] == acc]['profit'].iloc[0]
+
         print(total_value)
         data['account'].append([
             acc, accounts[acc],
             round(total_value['total_investment']),
             round(total_value['stock_profit_loss']) +
-            total_value['realized_profit'],
+            round(total_value['realized_profit']),
             round(total_value['stock_profit_loss']),
-            total_value['realized_profit']
+            round(total_value['realized_profit'])
         ])
 
 

@@ -4,7 +4,7 @@ from django.shortcuts import render
 from accounts.models import Account
 from stock_prices.views import initial_stock_price  # remember ad this to buy
 from utils import queryset2df
-from .models import TransactionData
+from .models import TransactionData, RealizedProfit
 
 ROOT = Path(__file__).resolve().parent.parent
 stock_codes = pd.read_csv(f'{ROOT}/stock_prices/stock_codes.csv',
@@ -63,7 +63,9 @@ def buy_transaction_form(request):
         #        print(stock_code, date, account, stock_price, stock_amount, fee)
         #        print(transaction)
         transaction.save()
-        #        data = TransactionData.objects.all()
+        data = TransactionData.objects.all()
+        df = queryset2df(data)
+        initial_stock_price(df)
         #        print(data)
         return render(request,
                       'transaction_success_message.html',
@@ -104,11 +106,10 @@ def sell_transaction_form(request):
 
         profit = cal_realized_profit(transaction_record_df, float(stock_price),
                                      int(stock_amount), int(fee))
-        realized_profit = Account(
-            name=account,
-            record_date=date,
-            realized_profit=profit,
-        )
+        realized_profit = RealizedProfit(code=stock_code,
+                                         date=date,
+                                         account=account,
+                                         profit=profit)
         realized_profit.save()
 
         transaction = TransactionData(code=stock_code.split(' ')[0],

@@ -22,7 +22,6 @@ def multiply(a, b):
 def ptg(a, b):
     try:
         value = round((a / b) * 100, 2)
-        print('try')
     except ZeroDivisionError:
         value = '--'
     return value

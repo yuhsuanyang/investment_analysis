@@ -3,7 +3,7 @@ from datetime import datetime
 from django.shortcuts import render, redirect
 from pathlib import Path
 from .models import Account
-from transactions.models import TransactionData
+from transactions.models import TransactionData, RealizedProfit
 from stock_prices.models import StockPriceData
 from utils import queryset2df
 
@@ -75,7 +75,9 @@ def delete_account(request):
 
 def display_unrealized_profit(account):
     transactions = TransactionData.objects.all().filter(account=account)
-    return 0, 0
+    if not len(transactions):
+        empty = pd.DataFrame([])
+        return empty, empty
     transaction_df = queryset2df(transactions).sort_values('code').reset_index(
         drop=True)
     all_prices = StockPriceData.objects.all().order_by('-date')
@@ -122,15 +124,21 @@ def display_profits(requests, account):
     with open(f"{ROOT}/stock_prices/data_date_record.txt", 'r') as f:
         record_date = f.read().strip()
     transaction_df, unrealized_profit = display_unrealized_profit(account)
-    if not transaction_df:
+    if not len(transaction_df):
         data = {'name': account}
         return render(requests, 'account.html', context=data)
-    account_records = Account.objects.filter(name=account)
+
+
+#    account_records = Account.objects.filter(name=account)
+    account_records = RealizedProfit.objects.filter(account=account)
     sold_stock = transaction_df[transaction_df['amount'] < 0]
     realized_profit = []
     for i in range(len(sold_stock)):
+        #        profit = account_records.filter(
+        #            record_date=sold_stock.iloc[i]['date'])[0].realized_profit
         profit = account_records.filter(
-            record_date=sold_stock.iloc[i]['date'])[0].realized_profit
+            code=sold_stock.iloc[i]['code']).filter(
+                date=sold_stock.iloc[i]['date'])[0].profit
         realized_profit.append([
             sold_stock.iloc[i]['code'], sold_stock.iloc[i]['date'],
             abs(sold_stock.iloc[i]['amount']),
